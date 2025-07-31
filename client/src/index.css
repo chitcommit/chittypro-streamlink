@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(151, 55%, 42%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --warning: hsl(45, 93%, 47%);
+  --warning-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+
+  /* Custom colors from design */
+  --dark: hsl(222, 84%, 5%);
+  --surface: hsl(215, 28%, 17%);
+  --elevated: hsl(220, 13%, 26%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(151, 55%, 42%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --warning: hsl(45, 93%, 47%);
+  --warning-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: hsl(222, 84%, 5%);
+    color: hsl(249, 10%, 98%);
+  }
+}
+
+@layer components {
+  .video-container {
+    background: linear-gradient(135deg, hsl(215, 28%, 17%) 0%, hsl(222, 84%, 5%) 100%);
+    border: 2px solid hsl(220, 13%, 26%);
+    transition: all 0.2s ease;
+  }
+
+  .video-container:hover {
+    border-color: hsl(217, 91%, 60%);
+    transform: translateY(-1px);
+  }
+
+  .video-container.dragging {
+    transform: rotate(2deg) scale(1.02);
+    border-color: hsl(151, 55%, 42%);
+    box-shadow: 0 10px 25px hsla(217, 91%, 60%, 0.3);
+  }
+
+  .live-indicator {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .grid-overlay {
+    background-image: 
+      linear-gradient(hsla(217, 91%, 60%, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(217, 91%, 60%, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .chat-message {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+}
