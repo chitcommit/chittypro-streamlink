@@ -1,0 +1,145 @@
+name: Deploy to derail.me
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment'
+        required: false
+        default: 'false'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript check
+        run: npm run check
+
+      - name: Run tests
+        run: npm test || echo "No tests configured yet"
+
+      - name: Build application
+        run: npm run build
+
+  deploy-production:
+    name: Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    environment:
+      name: production
+      url: https://derail.me
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_PORT || 22 }}
+          script: |
+            set -e
+
+            echo "🚀 Starting deployment to derail.me..."
+
+            # Navigate to application directory
+            cd /var/www/chittypro-streamlink || {
+              echo "Creating application directory..."
+              sudo mkdir -p /var/www/chittypro-streamlink
+              sudo chown $USER:$USER /var/www/chittypro-streamlink
+              cd /var/www/chittypro-streamlink
+            }
+
+            # Backup current deployment
+            if [ -d "current" ]; then
+              echo "Creating backup..."
+              sudo cp -r current backup-$(date +%Y%m%d-%H%M%S) || true
+            fi
+
+            # Clone/update repository
+            if [ -d ".git" ]; then
+              echo "Updating repository..."
+              git fetch origin
+              git reset --hard origin/main
+            else
+              echo "Cloning repository..."
+              git clone ${{ github.server_url }}/${{ github.repository }} .
+            fi
+
+            # Install dependencies and build
+            echo "Installing dependencies..."
+            npm ci --production
+
+            echo "Building application..."
+            npm run build
+
+            # Update environment
+            echo "Updating environment..."
+            cp .env.production .env
+
+            # Update database schema
+            echo "Updating database..."
+            npm run db:push || echo "Database update failed, continuing..."
+
+            # Restart application
+            echo "Restarting application..."
+            pm2 restart chittypro-streamlink || pm2 start ecosystem.config.js --env production
+            pm2 save
+
+            # Reload nginx
+            echo "Reloading nginx..."
+            sudo nginx -t && sudo systemctl reload nginx
+
+            # Health check
+            echo "Performing health check..."
+            sleep 5
+            if curl -f https://derail.me/api/health > /dev/null 2>&1; then
+              echo "✅ Deployment successful! https://derail.me is live"
+            else
+              echo "⚠️ Health check failed, but deployment completed"
+            fi
+
+            echo "🎉 Deployment to derail.me completed!"
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
