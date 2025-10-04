@@ -1,0 +1,73 @@
+{
+  "whitelabel": {
+    "enabled": true,
+    "domain": "derail.me",
+    "name": "Derail Camera System",
+    "shortName": "Derail Cameras",
+    "tagline": "Professional Surveillance, Simplified",
+
+    "branding": {
+      "hideChittyBranding": true,
+      "hidePoweredBy": true,
+      "customFooter": "© 2025 Derail.me. All rights reserved."
+    },
+
+    "theme": {
+      "primaryColor": "#2563eb",
+      "secondaryColor": "#7c3aed",
+      "accentColor": "#06b6d4",
+      "backgroundColor": "#ffffff",
+      "surfaceColor": "#f9fafb",
+      "textColor": "#1f2937",
+      "borderColor": "#e5e7eb",
+
+      "logo": {
+        "url": "/assets/derail-logo.svg",
+        "width": "180px",
+        "height": "40px",
+        "altText": "Derail Camera System"
+      },
+
+      "favicon": "/assets/derail-favicon.ico"
+    },
+
+    "features": {
+      "multiCamera": true,
+      "ptzControls": true,
+      "guestAccess": true,
+      "recordings": true,
+      "chat": false,
+      "analytics": false,
+      "ai": false
+    },
+
+    "routes": {
+      "basePath": "/cameras",
+      "apiPrefix": "/api/cameras",
+      "wsPath": "/ws/cameras"
+    },
+
+    "authentication": {
+      "sharedAuth": true,
+      "authEndpoint": "/api/auth",
+      "tokenKey": "derail_auth_token"
+    },
+
+    "ui": {
+      "showBranding": false,
+      "customHeader": true,
+      "customSidebar": true,
+      "integrateWithPlatform": true
+    },
+
+    "deployment": {
+      "type": "module",
+      "port": 3001,
+      "nginx": {
+        "locationPath": "/cameras",
+        "apiPath": "/api/cameras",
+        "wsPath": "/ws/cameras"
+      }
+    }
+  }
+}
