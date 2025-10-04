@@ -3,10 +3,13 @@ import CameraGrid from "@/components/camera-grid";
 import Sidebar from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Plus, Settings, Share, Grid3x3, Users } from "lucide-react";
+import { Camera, Plus, Settings, Share, Grid3x3 } from "lucide-react";
 import type { Camera as CameraType } from "@shared/schema";
+import { useWhitelabel } from "@/hooks/use-whitelabel";
 
 export default function CameraDashboard() {
+  const { config, loading: loadingConfig } = useWhitelabel();
+
   const { data: cameras = [], isLoading: loadingCameras } = useQuery<
     CameraType[]
   >({
@@ -17,19 +20,13 @@ export default function CameraDashboard() {
     queryKey: ["/api/user"],
   });
 
-  if (loadingCameras || loadingUser) {
+  if (loadingCameras || loadingUser || loadingConfig) {
     return (
-      <div
-        className="h-screen flex items-center justify-center"
-        style={{ background: "hsl(222, 84%, 5%)", color: "hsl(249, 10%, 98%)" }}
-      >
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-            style={{ borderColor: "hsl(217, 91%, 60%)" }}
-          ></div>
-          <p className="text-sm" style={{ color: "hsl(240, 5%, 64.9%)" }}>
-            Loading camera system...
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">
+            Loading {config.shortName || "camera system"}...
           </p>
         </div>
       </div>
@@ -45,40 +42,40 @@ export default function CameraDashboard() {
   };
 
   return (
-    <div
-      className="h-screen flex flex-col"
-      style={{ background: "hsl(222, 84%, 5%)", color: "hsl(249, 10%, 98%)" }}
-    >
+    <div className="h-screen flex flex-col bg-background text-foreground">
       {/* Header */}
-      <header
-        className="border-b px-6 py-4"
-        style={{
-          borderColor: "hsl(220, 13%, 26%)",
-          background: "hsl(215, 28%, 17%)",
-        }}
-      >
+      <header className="border-b border-border bg-card px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Camera style={{ color: "hsl(217, 91%, 60%)" }} size={24} />
-              <h1 className="text-xl font-bold">ChittyPro Streamlink</h1>
+              <Camera className="text-accent" size={24} />
+              <h1 className="text-xl font-bold">
+                {config.name || "Camera System"}
+              </h1>
             </div>
 
-            <Badge variant="outline" className="bg-primary/20 text-primary">
+            <Badge
+              variant="outline"
+              className="bg-accent/10 text-accent border-accent/30"
+            >
               {cameras.length} Cameras
             </Badge>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <Grid3x3 className="mr-2" size={16} />
-              Layout
-            </Button>
+            {config.features.multiCamera && (
+              <Button variant="ghost" size="sm">
+                <Grid3x3 className="mr-2" size={16} />
+                Layout
+              </Button>
+            )}
 
-            <Button variant="ghost" size="sm">
-              <Share className="mr-2" size={16} />
-              Share
-            </Button>
+            {config.features.guestAccess && (
+              <Button variant="ghost" size="sm">
+                <Share className="mr-2" size={16} />
+                Share
+              </Button>
+            )}
 
             <Button variant="ghost" size="sm">
               <Plus className="mr-2" size={16} />
@@ -90,7 +87,7 @@ export default function CameraDashboard() {
               Settings
             </Button>
 
-            <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-elevated">
+            <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-border">
               <img
                 src={currentUser.avatar}
                 alt="User avatar"
@@ -107,12 +104,12 @@ export default function CameraDashboard() {
         {/* Camera Grid */}
         <CameraGrid cameras={cameras} />
 
-        {/* Sidebar */}
-        <Sidebar currentUser={currentUser} />
+        {/* Sidebar - only show if chat is enabled */}
+        {config.features.chat && <Sidebar currentUser={currentUser} />}
       </div>
 
       {/* Footer Status Bar */}
-      <footer className="border-t border-elevated bg-surface px-6 py-2">
+      <footer className="border-t border-border bg-card px-6 py-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-4">
             <span>System Status: Online</span>
@@ -127,6 +124,12 @@ export default function CameraDashboard() {
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-accent rounded-full"></div>
             <span>Connected</span>
+            {config.branding.customFooter && (
+              <>
+                <span>•</span>
+                <span>{config.branding.customFooter}</span>
+              </>
+            )}
           </div>
         </div>
       </footer>

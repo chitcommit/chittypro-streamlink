@@ -72,6 +72,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check routes
   app.use("/api", healthRoutes);
 
+  // White-label configuration route
+  app.get("/config/whitelabel-derail.json", async (req, res) => {
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const configPath = path.join(
+        process.cwd(),
+        "config",
+        "whitelabel-derail.json",
+      );
+      const configData = await fs.readFile(configPath, "utf-8");
+      res.json(JSON.parse(configData));
+    } catch (error) {
+      console.error("Error loading white-label config:", error);
+      res.status(404).json({ message: "White-label configuration not found" });
+    }
+  });
+
   // User routes
   app.get("/api/user", async (req, res) => {
     try {
