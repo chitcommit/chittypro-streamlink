@@ -51,4 +51,5 @@ vite.config.ts.*
 
 # Coverage
 coverage/
-*.lcov
+*.lcov.chittycheck/
+.chittycheck/

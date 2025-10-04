@@ -3,18 +3,13 @@ import CameraGrid from "@/components/camera-grid";
 import Sidebar from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Camera, 
-  Plus, 
-  Settings, 
-  Share, 
-  Grid3x3,
-  Users 
-} from "lucide-react";
+import { Camera, Plus, Settings, Share, Grid3x3, Users } from "lucide-react";
 import type { Camera as CameraType } from "@shared/schema";
 
 export default function CameraDashboard() {
-  const { data: cameras = [], isLoading: loadingCameras } = useQuery<CameraType[]>({
+  const { data: cameras = [], isLoading: loadingCameras } = useQuery<
+    CameraType[]
+  >({
     queryKey: ["/api/cameras"],
   });
 
@@ -24,10 +19,18 @@ export default function CameraDashboard() {
 
   if (loadingCameras || loadingUser) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
+      <div
+        className="h-screen flex items-center justify-center"
+        style={{ background: "hsl(222, 84%, 5%)", color: "hsl(249, 10%, 98%)" }}
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading camera system...</p>
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+            style={{ borderColor: "hsl(217, 91%, 60%)" }}
+          ></div>
+          <p className="text-sm" style={{ color: "hsl(240, 5%, 64.9%)" }}>
+            Loading camera system...
+          </p>
         </div>
       </div>
     );
@@ -36,20 +39,31 @@ export default function CameraDashboard() {
   const currentUser = {
     id: user?.id || "user-1",
     name: user?.firstName || user?.username || "Camera Admin",
-    avatar: user?.profileImageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.firstName || 'Admin'}`
+    avatar:
+      user?.profileImageUrl ||
+      `https://api.dicebear.com/7.x/initials/svg?seed=${user?.firstName || "Admin"}`,
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div
+      className="h-screen flex flex-col"
+      style={{ background: "hsl(222, 84%, 5%)", color: "hsl(249, 10%, 98%)" }}
+    >
       {/* Header */}
-      <header className="border-b border-elevated bg-surface px-6 py-4">
+      <header
+        className="border-b px-6 py-4"
+        style={{
+          borderColor: "hsl(220, 13%, 26%)",
+          background: "hsl(215, 28%, 17%)",
+        }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Camera className="text-primary" size={24} />
-              <h1 className="text-xl font-bold">Reolink Camera System</h1>
+              <Camera style={{ color: "hsl(217, 91%, 60%)" }} size={24} />
+              <h1 className="text-xl font-bold">ChittyPro Streamlink</h1>
             </div>
-            
+
             <Badge variant="outline" className="bg-primary/20 text-primary">
               {cameras.length} Cameras
             </Badge>
@@ -60,27 +74,27 @@ export default function CameraDashboard() {
               <Grid3x3 className="mr-2" size={16} />
               Layout
             </Button>
-            
+
             <Button variant="ghost" size="sm">
               <Share className="mr-2" size={16} />
               Share
             </Button>
-            
+
             <Button variant="ghost" size="sm">
               <Plus className="mr-2" size={16} />
               Add Camera
             </Button>
-            
+
             <Button variant="ghost" size="sm">
               <Settings className="mr-2" size={16} />
               Settings
             </Button>
 
             <div className="flex items-center space-x-2 ml-4 pl-4 border-l border-elevated">
-              <img 
+              <img
                 src={currentUser.avatar}
-                alt="User avatar" 
-                className="w-8 h-8 rounded-full object-cover" 
+                alt="User avatar"
+                className="w-8 h-8 rounded-full object-cover"
               />
               <span className="text-sm font-medium">{currentUser.name}</span>
             </div>
@@ -92,7 +106,7 @@ export default function CameraDashboard() {
       <div className="flex-1 flex overflow-hidden">
         {/* Camera Grid */}
         <CameraGrid cameras={cameras} />
-        
+
         {/* Sidebar */}
         <Sidebar currentUser={currentUser} />
       </div>
@@ -103,11 +117,13 @@ export default function CameraDashboard() {
           <div className="flex items-center space-x-4">
             <span>System Status: Online</span>
             <span>•</span>
-            <span>{cameras.filter(c => c.isActive).length} Active Streams</span>
+            <span>
+              {cameras.filter((c) => c.isActive).length} Active Streams
+            </span>
             <span>•</span>
             <span>Last Updated: {new Date().toLocaleTimeString()}</span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-accent rounded-full"></div>
             <span>Connected</span>

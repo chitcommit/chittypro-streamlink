@@ -13,19 +13,22 @@
     },
 
     "theme": {
-      "primaryColor": "#2563eb",
-      "secondaryColor": "#7c3aed",
-      "accentColor": "#06b6d4",
-      "backgroundColor": "#ffffff",
-      "surfaceColor": "#f9fafb",
-      "textColor": "#1f2937",
-      "borderColor": "#e5e7eb",
+      "primaryColor": "#2d3436",
+      "secondaryColor": "#00d9ff",
+      "accentColor": "#00d9ff",
+      "backgroundColor": "#f8f7f4",
+      "surfaceColor": "#e8dcc4",
+      "textColor": "#2d3436",
+      "borderColor": "#475569",
+      "successColor": "#10b981",
+      "warningColor": "#f59e0b",
+      "errorColor": "#dc2626",
 
       "logo": {
         "url": "/assets/derail-logo.svg",
         "width": "180px",
         "height": "40px",
-        "altText": "Derail Camera System"
+        "altText": "Derail.me Camera Security"
       },
 
       "favicon": "/assets/derail-favicon.ico"
