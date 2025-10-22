@@ -11,7 +11,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Video,
-  RecordIcon,
+  Circle,
   MoreVertical,
   Eye,
   EyeOff,
@@ -161,7 +161,7 @@ export default function CameraStream({
                 className="bg-surface border-elevated"
               >
                 <DropdownMenuItem onClick={handleRecordingRequest}>
-                  <RecordIcon className="mr-2 h-4 w-4" />
+                  <Circle className="mr-2 h-4 w-4" />
                   Request Recording
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -284,9 +284,9 @@ export default function CameraStream({
           {/* Stream Overlay - Prevents right-click and selection */}
           <div
             className="absolute inset-0 bg-transparent"
-            onContextMenu={(e) => e.preventDefault()}
-            onSelectStart={(e) => e.preventDefault()}
-            onDragStart={(e) => e.preventDefault()}
+            onContextMenu={(event) => event.preventDefault()}
+            onMouseDown={(event) => event.preventDefault()}
+            onDragStart={(event) => event.preventDefault()}
           />
         </div>
       ) : (

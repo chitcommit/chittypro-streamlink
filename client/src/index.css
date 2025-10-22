@@ -4,58 +4,58 @@
 
 :root {
   /* Derail.me Brand Colors */
-  --background: hsl(32, 8%, 96%); /* Cream #f8f7f4 */
-  --foreground: hsl(195, 7%, 21%); /* Charcoal #2d3436 */
-  --muted: hsl(39, 28%, 85%); /* Sand #e8dcc4 */
-  --muted-foreground: hsl(195, 7%, 40%);
-  --popover: hsl(32, 8%, 96%);
-  --popover-foreground: hsl(195, 7%, 21%);
-  --card: hsl(32, 8%, 96%);
-  --card-foreground: hsl(195, 7%, 21%);
-  --border: hsl(195, 7%, 30%); /* Darker border for contrast */
-  --input: hsl(39, 28%, 85%);
-  --primary: hsl(195, 7%, 21%); /* Charcoal */
-  --primary-foreground: hsl(32, 8%, 96%); /* Cream text on dark */
-  --secondary: hsl(190, 100%, 50%); /* Electric Teal #00d9ff */
-  --secondary-foreground: hsl(195, 7%, 21%);
-  --accent: hsl(190, 100%, 50%); /* Electric Teal */
-  --accent-foreground: hsl(195, 7%, 21%);
-  --destructive: hsl(0, 63%, 53%);
-  --destructive-foreground: hsl(32, 8%, 96%);
-  --warning: hsl(45, 93%, 47%);
-  --warning-foreground: hsl(195, 7%, 21%);
-  --ring: hsl(190, 100%, 50%);
+  --background: 32 8% 96%; /* Cream #f8f7f4 */
+  --foreground: 195 7% 21%; /* Charcoal #2d3436 */
+  --muted: 39 28% 85%; /* Sand #e8dcc4 */
+  --muted-foreground: 195 7% 40%;
+  --popover: 32 8% 96%;
+  --popover-foreground: 195 7% 21%;
+  --card: 32 8% 96%;
+  --card-foreground: 195 7% 21%;
+  --border: 195 7% 30%; /* Darker border for contrast */
+  --input: 39 28% 85%;
+  --primary: 195 7% 21%; /* Charcoal */
+  --primary-foreground: 32 8% 96%; /* Cream text on dark */
+  --secondary: 190 100% 50%; /* Electric Teal #00d9ff */
+  --secondary-foreground: 195 7% 21%;
+  --accent: 190 100% 50%; /* Electric Teal */
+  --accent-foreground: 195 7% 21%;
+  --destructive: 0 63% 53%;
+  --destructive-foreground: 32 8% 96%;
+  --warning: 45 93% 47%;
+  --warning-foreground: 195 7% 21%;
+  --ring: 190 100% 50%;
   --radius: 0.5rem;
 
   /* Custom colors - derail.me theme */
-  --dark: hsl(195, 7%, 21%); /* Charcoal */
-  --surface: hsl(39, 28%, 85%); /* Sand */
-  --elevated: hsl(195, 7%, 30%); /* Darker charcoal */
+  --dark: 195 7% 21%; /* Charcoal */
+  --surface: 39 28% 85%; /* Sand */
+  --elevated: 195 7% 30%; /* Darker charcoal */
 }
 
 .dark {
   /* Same as root - derail.me doesn't have a dark mode variant */
-  --background: hsl(32, 8%, 96%);
-  --foreground: hsl(195, 7%, 21%);
-  --muted: hsl(39, 28%, 85%);
-  --muted-foreground: hsl(195, 7%, 40%);
-  --popover: hsl(32, 8%, 96%);
-  --popover-foreground: hsl(195, 7%, 21%);
-  --card: hsl(32, 8%, 96%);
-  --card-foreground: hsl(195, 7%, 21%);
-  --border: hsl(195, 7%, 30%);
-  --input: hsl(39, 28%, 85%);
-  --primary: hsl(195, 7%, 21%);
-  --primary-foreground: hsl(32, 8%, 96%);
-  --secondary: hsl(190, 100%, 50%);
-  --secondary-foreground: hsl(195, 7%, 21%);
-  --accent: hsl(190, 100%, 50%);
-  --accent-foreground: hsl(195, 7%, 21%);
-  --destructive: hsl(0, 63%, 53%);
-  --destructive-foreground: hsl(32, 8%, 96%);
-  --warning: hsl(45, 93%, 47%);
-  --warning-foreground: hsl(195, 7%, 21%);
-  --ring: hsl(190, 100%, 50%);
+  --background: 32 8% 96%;
+  --foreground: 195 7% 21%;
+  --muted: 39 28% 85%;
+  --muted-foreground: 195 7% 40%;
+  --popover: 32 8% 96%;
+  --popover-foreground: 195 7% 21%;
+  --card: 32 8% 96%;
+  --card-foreground: 195 7% 21%;
+  --border: 195 7% 30%;
+  --input: 39 28% 85%;
+  --primary: 195 7% 21%;
+  --primary-foreground: 32 8% 96%;
+  --secondary: 190 100% 50%;
+  --secondary-foreground: 195 7% 21%;
+  --accent: 190 100% 50%;
+  --accent-foreground: 195 7% 21%;
+  --destructive: 0 63% 53%;
+  --destructive-foreground: 32 8% 96%;
+  --warning: 45 93% 47%;
+  --warning-foreground: 195 7% 21%;
+  --ring: 190 100% 50%;
 }
 
 @layer base {
@@ -84,7 +84,7 @@
   .video-container.dragging {
     transform: rotate(2deg) scale(1.02);
     border-color: hsl(var(--accent));
-    box-shadow: 0 10px 25px hsla(var(--accent), 0.3);
+    box-shadow: 0 10px 25px hsl(var(--accent) / 0.3);
   }
 
   .live-indicator {
@@ -98,8 +98,8 @@
 
   .grid-overlay {
     background-image:
-      linear-gradient(hsla(var(--accent), 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--accent), 0.1) 1px, transparent 1px);
+      linear-gradient(hsl(var(--accent) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--accent) / 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
   }
 

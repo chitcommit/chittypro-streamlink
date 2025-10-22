@@ -11,6 +11,8 @@ interface SidebarProps {
     id: string;
     name: string;
     avatar: string;
+    role?: string;
+    chittyId?: string;
   };
 }
 
@@ -97,8 +99,16 @@ export default function Sidebar({ currentUser }: SidebarProps) {
           <div className="flex items-center space-x-2 text-sm">
             <div className="w-2 h-2 bg-accent rounded-full"></div>
             <span className="font-medium">{currentUser.name}</span>
-            <span className="text-gray-400 text-xs ml-auto">Owner</span>
+            <span className="text-gray-400 text-xs ml-auto">
+              {currentUser.role || "Owner"}
+            </span>
           </div>
+          {currentUser.chittyId && (
+            <div className="flex items-center space-x-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+              <span className="font-semibold">ChittyID</span>
+              <span>{currentUser.chittyId}</span>
+            </div>
+          )}
           
           {/* Guest users */}
           {activeSessions.map((session: any) => (

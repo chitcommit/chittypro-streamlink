@@ -20,6 +20,8 @@ import {
   type InsertChatMessage,
   type Recording,
   type InsertRecording,
+  type ShareLink,
+  type InsertShareLink,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -64,6 +66,21 @@ export interface IStorage {
   getRecordings(cameraId?: string, userId?: string): Promise<Recording[]>;
   createRecording(recording: InsertRecording): Promise<Recording>;
   updateRecording(id: string, updates: Partial<InsertRecording>): Promise<Recording | undefined>;
+
+  // Share link operations
+  createShareLink(link: InsertShareLink): Promise<ShareLink>;
+  getShareLink(identifier: string): Promise<ShareLink | undefined>;
+  updateShareLink(
+    id: string,
+    updates: Partial<ShareLink>,
+  ): Promise<ShareLink | undefined>;
+  getActiveShareLinks(userId: string): Promise<ShareLink[]>;
+  getExpiredShareLinks(): Promise<ShareLink[]>;
+  getShareLinkStats(userId: string): Promise<{
+    active: number;
+    expired: number;
+    revoked: number;
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -74,6 +91,7 @@ export class MemStorage implements IStorage {
   private recordingRequests: Map<string, RecordingRequest> = new Map();
   private chatMessages: ChatMessage[] = [];
   private recordings: Map<string, Recording> = new Map();
+  private shareLinks: Map<string, ShareLink> = new Map();
 
   constructor() {
     this.initSampleData();
@@ -89,6 +107,9 @@ export class MemStorage implements IStorage {
       lastName: "Admin",
       profileImageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32",
       role: "owner",
+      password: null,
+      isActive: true,
+      lastLogin: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -164,6 +185,9 @@ export class MemStorage implements IStorage {
       firstName: insertUser.firstName || null,
       lastName: insertUser.lastName || null,
       profileImageUrl: insertUser.profileImageUrl || null,
+      password: insertUser.password || null,
+      isActive: insertUser.isActive ?? true,
+      lastLogin: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -198,10 +222,10 @@ export class MemStorage implements IStorage {
     const camera: Camera = {
       ...insertCamera,
       id,
-      resolution: insertCamera.resolution || null,
-      hasPTZ: insertCamera.hasPTZ || null,
+      resolution: insertCamera.resolution || "1080p",
+      hasPTZ: insertCamera.hasPTZ ?? false,
       position: insertCamera.position || null,
-      isActive: insertCamera.isActive || null,
+      isActive: insertCamera.isActive ?? true,
       ownerId: insertCamera.ownerId || null,
       createdAt: new Date(),
     };
@@ -254,8 +278,13 @@ export class MemStorage implements IStorage {
   }
 
   // Guest session operations
-  async getGuestSession(token: string): Promise<GuestSession | undefined> {
-    return Array.from(this.guestSessions.values()).find(session => session.inviteToken === token);
+  async getGuestSession(identifier: string): Promise<GuestSession | undefined> {
+    const byId = this.guestSessions.get(identifier);
+    if (byId) return byId;
+
+    return Array.from(this.guestSessions.values()).find(
+      (session) => session.inviteToken === identifier,
+    );
   }
 
   async createGuestSession(insertSession: InsertGuestSession): Promise<GuestSession> {
@@ -263,9 +292,16 @@ export class MemStorage implements IStorage {
     const session: GuestSession = {
       ...insertSession,
       id,
-      allowedCameras: insertSession.allowedCameras || null,
-      canRecord: insertSession.canRecord || null,
-      isActive: insertSession.isActive || null,
+      shareUrl: insertSession.shareUrl,
+      allowedCameras: insertSession.allowedCameras ?? [],
+      canRecord: insertSession.canRecord ?? false,
+      canPTZ: insertSession.canPTZ ?? false,
+      maxUsers: insertSession.maxUsers ?? 1,
+      currentUsers: insertSession.currentUsers ?? 0,
+      isActive: insertSession.isActive ?? true,
+      isOneTime: insertSession.isOneTime ?? false,
+      revokedAt: insertSession.revokedAt ?? null,
+      revokedBy: insertSession.revokedBy || null,
       createdAt: new Date(),
     };
     this.guestSessions.set(id, session);
@@ -276,7 +312,22 @@ export class MemStorage implements IStorage {
     const session = this.guestSessions.get(id);
     if (!session) return undefined;
     
-    const updatedSession = { ...session, ...updates };
+    const updatedSession: GuestSession = {
+      ...session,
+      ...updates,
+      shareUrl: updates.shareUrl ?? session.shareUrl,
+      allowedCameras: updates.allowedCameras ?? session.allowedCameras,
+      canRecord: updates.canRecord ?? session.canRecord,
+      canPTZ: updates.canPTZ ?? session.canPTZ,
+      maxUsers: updates.maxUsers ?? session.maxUsers,
+      currentUsers: updates.currentUsers ?? session.currentUsers,
+      isActive: updates.isActive ?? session.isActive,
+      isOneTime: updates.isOneTime ?? session.isOneTime,
+      revokedAt: updates.revokedAt ?? session.revokedAt,
+      revokedBy: updates.revokedBy ?? session.revokedBy,
+      createdBy: updates.createdBy ?? session.createdBy,
+      expiresAt: updates.expiresAt ?? session.expiresAt,
+    };
     this.guestSessions.set(id, updatedSession);
     return updatedSession;
   }
@@ -381,6 +432,95 @@ export class MemStorage implements IStorage {
     const updatedRecording = { ...recording, ...updates };
     this.recordings.set(id, updatedRecording);
     return updatedRecording;
+  }
+
+  // Share link operations
+  async createShareLink(insertLink: InsertShareLink): Promise<ShareLink> {
+    const id = randomUUID();
+    const link: ShareLink = {
+      ...insertLink,
+      id,
+      accessedBy: insertLink.accessedBy || null,
+      accessedAt: null,
+      isRevoked: insertLink.isRevoked ?? false,
+      revokedAt: null,
+      revokedBy: insertLink.revokedBy || null,
+      createdAt: new Date(),
+    };
+    this.shareLinks.set(id, link);
+    return link;
+  }
+
+  async getShareLink(identifier: string): Promise<ShareLink | undefined> {
+    const byId = this.shareLinks.get(identifier);
+    if (byId) return byId;
+
+    return Array.from(this.shareLinks.values()).find(
+      (link) => link.token === identifier,
+    );
+  }
+
+  async updateShareLink(
+    id: string,
+    updates: Partial<ShareLink>,
+  ): Promise<ShareLink | undefined> {
+    const existing = await this.getShareLink(id);
+    if (!existing) return undefined;
+
+    const key = this.shareLinks.has(id) ? id : existing.id;
+    const updated: ShareLink = {
+      ...existing,
+      ...updates,
+      accessedBy: updates.accessedBy ?? existing.accessedBy,
+      accessedAt: updates.accessedAt ?? existing.accessedAt,
+      isRevoked: updates.isRevoked ?? existing.isRevoked,
+      revokedAt: updates.revokedAt ?? existing.revokedAt,
+      revokedBy: updates.revokedBy ?? existing.revokedBy,
+      expiresAt: updates.expiresAt ?? existing.expiresAt,
+    };
+
+    this.shareLinks.set(key, updated);
+    return updated;
+  }
+
+  async getActiveShareLinks(userId: string): Promise<ShareLink[]> {
+    const now = new Date();
+    return Array.from(this.shareLinks.values()).filter(
+      (link) =>
+        link.createdBy === userId && !link.isRevoked && link.expiresAt > now,
+    );
+  }
+
+  async getExpiredShareLinks(): Promise<ShareLink[]> {
+    const now = new Date();
+    return Array.from(this.shareLinks.values()).filter(
+      (link) => link.expiresAt <= now && !link.isRevoked,
+    );
+  }
+
+  async getShareLinkStats(userId: string): Promise<{
+    active: number;
+    expired: number;
+    revoked: number;
+  }> {
+    const now = new Date();
+    let active = 0;
+    let expired = 0;
+    let revoked = 0;
+
+    for (const link of Array.from(this.shareLinks.values())) {
+      if (link.createdBy !== userId) continue;
+
+      if (link.isRevoked) {
+        revoked++;
+      } else if (link.expiresAt <= now) {
+        expired++;
+      } else {
+        active++;
+      }
+    }
+
+    return { active, expired, revoked };
   }
 }
 

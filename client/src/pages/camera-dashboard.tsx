@@ -39,6 +39,8 @@ export default function CameraDashboard() {
     avatar:
       user?.profileImageUrl ||
       `https://api.dicebear.com/7.x/initials/svg?seed=${user?.firstName || "Admin"}`,
+    role: user?.role || user?.roles?.[0] || "Owner",
+    chittyId: user?.chittyId,
   };
 
   return (
@@ -94,6 +96,14 @@ export default function CameraDashboard() {
                 className="w-8 h-8 rounded-full object-cover"
               />
               <span className="text-sm font-medium">{currentUser.name}</span>
+              {currentUser.chittyId && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-2 py-0.5 bg-muted/60 text-muted-foreground border-border"
+                >
+                  {currentUser.chittyId}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

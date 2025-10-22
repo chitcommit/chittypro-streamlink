@@ -100,7 +100,7 @@ export function formatCameraResolution(resolution: string): string {
 }
 
 export function generateCameraId(): string {
-  return `cam-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `cam-${Date.now()}`;
 }
 
 export function parsePTZDirection(direction: string): { 

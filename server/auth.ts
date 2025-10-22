@@ -187,7 +187,7 @@ export async function validateGuestSession(token: string): Promise<boolean> {
 
     // Check if session is active and not expired
     const now = new Date();
-    return session.isActive && session.expiresAt > now;
+    return Boolean(session.isActive) && session.expiresAt > now;
   } catch (error) {
     console.error("Guest session validation error:", error);
     return false;
@@ -268,7 +268,7 @@ export function createRateLimit(windowMs: number, max: number) {
     const windowStart = now - windowMs;
 
     // Clean up old entries
-    for (const [key, value] of requests.entries()) {
+    for (const [key, value] of Array.from(requests.entries())) {
       if (value.resetTime < windowStart) {
         requests.delete(key);
       }

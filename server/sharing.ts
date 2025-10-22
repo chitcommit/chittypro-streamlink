@@ -43,7 +43,7 @@ export class SharingService {
 
       // Create guest user for this session
       const guestUser = await storage.createUser({
-        username: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        username: `guest_${Date.now()}`,
         firstName: "Guest User",
         role: "guest",
       });
@@ -116,7 +116,10 @@ export class SharingService {
       }
 
       // Check concurrent user limit
-      if (guestSession.currentUsers >= guestSession.maxUsers) {
+      const currentUsers = guestSession.currentUsers ?? 0;
+      const maxUsers = guestSession.maxUsers ?? 1;
+
+      if (currentUsers >= maxUsers) {
         throw new Error("Maximum concurrent users reached for this link");
       }
 
@@ -128,7 +131,7 @@ export class SharingService {
 
       // Update current user count
       await storage.updateGuestSession(guestSession.id, {
-        currentUsers: guestSession.currentUsers + 1,
+        currentUsers: currentUsers + 1,
       });
 
       // Revoke one-time link after first access
@@ -333,7 +336,8 @@ export class SharingService {
       const guestSession = await storage.getGuestSession(shareLink.sessionId);
       if (!guestSession) return;
 
-      const newCount = Math.max(0, guestSession.currentUsers - 1);
+      const currentUsers = guestSession.currentUsers ?? 0;
+      const newCount = Math.max(0, currentUsers - 1);
       await storage.updateGuestSession(guestSession.id, {
         currentUsers: newCount,
       });

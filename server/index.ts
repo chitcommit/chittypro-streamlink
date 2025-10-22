@@ -2,6 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { StreamingServer } from "./streaming";
+import {
+  getChittyIntegration,
+  initializeChittyIntegration,
+} from "./services/chittyIntegration";
 
 const app = express();
 app.use(express.json());
@@ -56,7 +60,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  await initializeChittyIntegration();
+  const integration = getChittyIntegration();
+  const server = await registerRoutes(app, integration);
 
   // Initialize streaming server
   const streamingServer = new StreamingServer(server);

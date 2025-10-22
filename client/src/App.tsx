@@ -5,10 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import CameraDashboard from "@/pages/camera-dashboard";
+import TestSimple from "@/pages/test-simple";
 
 function Router() {
   return (
     <Switch>
+      <Route path="/test" component={TestSimple} />
       <Route path="/" component={CameraDashboard} />
       <Route component={NotFound} />
     </Switch>

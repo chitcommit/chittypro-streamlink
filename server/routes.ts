@@ -9,8 +9,15 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import healthRoutes from "./routes/health";
+import {
+  ChittyIntegration,
+  getChittyIntegration,
+} from "./services/chittyIntegration";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(
+  app: Express,
+  integration?: ChittyIntegration,
+): Promise<Server> {
   const httpServer = createServer(app);
 
   // WebSocket server for real-time chat and notifications
@@ -93,12 +100,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User routes
   app.get("/api/user", async (req, res) => {
     try {
-      // For now, return the admin user as the current user
-      const user = await storage.getUser("admin-1");
-      if (!user) {
+      const chitty = integration ?? getChittyIntegration();
+      const profile = await chitty.fetchOwnerProfile();
+
+      if (profile) {
+        return res.json({
+          id: profile.id,
+          chittyId: profile.chittyId ?? profile.id,
+          email: profile.email,
+          username: profile.username ?? profile.email ?? profile.id,
+          firstName: profile.displayName ?? profile.username ?? profile.email,
+          role: profile.roles?.[0] ?? "owner",
+          roles: profile.roles ?? ["owner"],
+          profileImageUrl: profile.picture ?? null,
+        });
+      }
+
+      const fallback = await storage.getUser("admin-1");
+      if (!fallback) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json(user);
+
+      res.json(fallback);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -236,32 +259,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Guest session routes
   app.post("/api/guest-sessions", async (req, res) => {
     try {
-      const { guestName, duration, allowedCameras, canRecord } = req.body;
+      const {
+        guestName,
+        duration,
+        allowedCameras,
+        canRecord,
+        canPTZ = false,
+        maxUsers = 1,
+      } = req.body;
+
+      const chitty = integration ?? getChittyIntegration();
+      let guestIdentifier: string;
+
+      try {
+        guestIdentifier = await chitty.mintGuestChittyId(guestName);
+      } catch (mintError) {
+        console.warn("ChittyID mint failed, falling back to UUID", mintError);
+        guestIdentifier = `CHITTY-GUEST-${randomUUID().slice(0, 8)}`;
+      }
 
       // Create guest user
       const guestUser = await storage.createUser({
-        username: `guest_${Date.now()}`,
+        username: guestIdentifier,
         firstName: guestName,
         role: "guest",
+        email: `${guestIdentifier.toLowerCase()}@guest.chitty.cc`,
       });
 
       // Calculate expiry
       const now = new Date();
       const expiresAt = new Date(now.getTime() + parseDuration(duration));
 
+      const inviteToken = randomUUID();
+      const host = req.get("host");
+      const protocol = req.protocol;
+      const shareUrl = `${protocol}://${host}/guest/${inviteToken}`;
+      const createdBy = (req as any).user?.id || "admin-1";
+
       // Create guest session
       const session = await storage.createGuestSession({
         guestId: guestUser.id,
-        inviteToken: randomUUID(),
+        inviteToken,
+        shareUrl,
         expiresAt,
         allowedCameras,
-        canRecord,
+        canRecord: Boolean(canRecord),
+        canPTZ: Boolean(canPTZ),
+        maxUsers,
+        currentUsers: 0,
         isActive: true,
+        isOneTime: false,
+        createdBy,
       });
 
       res.status(201).json({
         ...session,
-        inviteUrl: `${req.protocol}://${req.get("host")}/guest/${session.inviteToken}`,
+        guestChittyId: guestIdentifier,
+        inviteUrl: shareUrl,
       });
     } catch (error) {
       console.error("Error creating guest session:", error);

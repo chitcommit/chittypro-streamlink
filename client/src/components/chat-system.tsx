@@ -11,6 +11,7 @@ interface ChatSystemProps {
     id: string;
     name: string;
     avatar: string;
+    chittyId?: string;
   };
 }
 
@@ -94,6 +95,11 @@ export default function ChatSystem({ currentUser }: ChatSystemProps) {
                   <span className="text-xs font-medium">
                     {msg.user?.firstName || msg.user?.name || currentUser.name}
                   </span>
+                  {(msg.user?.chittyId || currentUser.chittyId) && (
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {msg.user?.chittyId || currentUser.chittyId}
+                    </span>
+                  )}
                   <span className="text-xs text-gray-400">
                     {formatTime(msg.createdAt)}
                   </span>
